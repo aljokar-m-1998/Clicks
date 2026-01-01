@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة الصراع الأسطوري - الإصدار المحسن</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e6e6e6;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+        }
+        
+        .game-area {
+            background: rgba(30, 30, 46, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid #4cc9f0;
+        }
+        
+        .shop-area {
+            background: rgba(30, 30, 46, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid #f72585;
+            overflow-y: auto;
+            max-height: 90vh;
+        }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(20, 20, 35, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #4361ee;
+        }
+        
+        .stat {
+            text-align: center;
+            flex: 1;
+            margin: 0 10px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4cc9f0;
+            text-shadow: 0 0 10px rgba(76, 201, 240, 0.5);
+        }
+        
+        .monster-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 25px;
+            border: 3px solid #7209b7;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .monster-name {
+            font-size: 28px;
+            color: #f72585;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(247, 37, 133, 0.5);
+        }
+        
+        .health-bar {
+            width: 100%;
+            height: 30px;
+            background: rgba(255, 0, 0, 0.2);
+            border-radius: 15px;
+            margin: 15px 0;
+            overflow: hidden;
+            border: 2px solid #ff0000;
+        }
+        
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #ff6b6b);
+            border-radius: 15px;
+            transition: width 0.3s ease;
+        }
+        
+        .monster-health {
+            font-size: 22px;
+            margin: 10px 0;
+            color: #ff6b6b;
+        }
+        
+        .click-area {
+            background: rgba(67, 97, 238, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px dashed #4361ee;
+            transition: transform 0.1s;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .click-area:active {
+            transform: scale(0.98);
+        }
+        
+        .click-damage {
+            font-size: 24px;
+            color: #4cc9f0;
+            margin-bottom: 10px;
+        }
+        
+        .upgrade-section {
+            margin-top: 25px;
+            background: rgba(20, 20, 35, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #7209b7;
+        }
+        
+        .section-title {
+            color: #f72585;
+            border-bottom: 2px solid #f72585;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+        
+        .upgrade-btn {
+            background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: right;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .upgrade-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+        }
+        
+        .upgrade-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .cost {
+            color: #4cc9f0;
+            font-weight: bold;
+        }
+        
+        .damage-display {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .damage-type {
+            background: rgba(67, 97, 238, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+            border: 1px solid #4361ee;
+        }
+        
+        .prestige-section {
+            background: rgba(247, 37, 133, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 25px;
+            border: 1px solid #f72585;
+            text-align: center;
+        }
+        
+        .prestige-btn {
+            background: linear-gradient(135deg, #f72585 0%, #b5179e 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+            width: 100%;
+        }
+        
+        .prestige-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(247, 37, 133, 0.4);
+        }
+        
+        .jewel-display {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 215, 0, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid gold;
+            margin-left: 10px;
+        }
+        
+        .jewel-icon {
+            color: gold;
+            margin-left: 5px;
+        }
+        
+        .monster-jewel-drop {
+            position: absolute;
+            animation: jewelFloat 1.5s ease-out forwards;
+            font-size: 24px;
+            z-index: 10;
+        }
+        
+        @keyframes jewelFloat {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-100px) scale(0.5); opacity: 0; }
+        }
+        
+        .achievement-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #7209b7 0%, #3a0ca3 100%);
+            padding: 15px 25px;
+            border-radius: 10px;
+            animation: slideIn 0.5s ease-out;
+            z-index: 1000;
+            border: 2px solid gold;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4cc9f0, #4361ee);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .damage-display {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-area">
+            <div class="stats-bar">
+                <div class="stat">
+                    <div>الذهب</div>
+                    <div class="stat-value" id="gold">0</div>
+                </div>
+                <div class="stat">
+                    <div>الجواهر</div>
+                    <div class="stat-value">
+                        <span id="jewels">0</span>
+                        <span class="jewel-icon">💎</span>
+                    </div>
+                </div>
+                <div class="stat">
+                    <div>القتلى</div>
+                    <div class="stat-value" id="kills">0</div>
+                </div>
+                <div class="stat">
+                    <div>مستوى البطل</div>
+                    <div class="stat-value" id="playerLevel">1</div>
+                </div>
+            </div>
+            
+            <div class="monster-container" id="monsterContainer">
+                <div class="monster-name" id="monsterName">وحش المستوى الأول</div>
+                <div class="health-bar">
+                    <div class="health-fill" id="healthFill" style="width: 100%"></div>
+                </div>
+                <div class="monster-health" id="monsterHealth">100 / 100</div>
+                <div>مكافأة: <span id="monsterReward">10 ذهب + 1 جوهرة</span></div>
+            </div>
+            
+            <div class="click-area" id="clickArea">
+                <div class="click-damage">اضغط للهجوم! (<span id="clickDamage">10</span> ضرر)</div>
+                <div>أو انتظر هجوم الأسلحة والحلفاء</div>
+            </div>
+            
+            <div class="damage-display">
+                <div class="damage-type">
+                    <div>ضرر الضغطة</div>
+                    <div class="stat-value" id="totalClickDamage">10</div>
+                </div>
+                <div class="damage-type">
+                    <div>ضرر الأسلحة</div>
+                    <div class="stat-value" id="totalWeaponDamage">0</div>
+                </div>
+                <div class="damage-type">
+                    <div>ضرر الحلفاء</div>
+                    <div class="stat-value" id="totalAllyDamage">0</div>
+                </div>
+                <div class="damage-type">
+                    <div>إجمالي الضرر/الثانية</div>
+                    <div class="stat-value" id="totalDPS">0</div>
+                </div>
+            </div>
+            
+            <div class="prestige-section">
+                <h3>نظام البطولات</h3>
+                <p>عند الوصول لمستوى 50، يمكنك البطولة لزيادة المكافآت بشكل دائم!</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="prestigeProgress" style="width: 0%"></div>
+                </div>
+                <div>التقدم للمستوى 50: <span id="currentLevel">1</span>/50</div>
+                <button class="prestige-btn" id="prestigeBtn" disabled>البطولة غير متاحة بعد</button>
+            </div>
+        </div>
+        
+        <div class="shop-area">
+            <h2 class="section-title">🏪 متجر الترقيات</h2>
+            
+            <div class="upgrade-section">
+                <h3>⚔️ ترقيات الضغطة</h3>
+                <button class="upgrade-btn" onclick="buyUpgrade('click')">
+                    <span>تحسين الضغطة (+5 ضرر)</span>
+                    <span class="cost"><span id="clickCost">50</span> ذهب</span>
+                </button>
+                <button class="upgrade-btn" onclick="buyUpgrade('clickMultiplier')">
+                    <span>مضاعف الضغطة (x2)</span>
+                    <span class="cost"><span id="clickMultiplierCost">5</span> 💎</span>
+                </button>
+            </div>
+            
+            <div class="upgrade-section">
+                <h3>🔫 ترقيات الأسلحة</h3>
+                <button class="upgrade-btn" onclick="buyUpgrade('weapon')">
+                    <span>سلاح أساسي (2 ضرر/ثانية)</span>
+                    <span class="cost"><span id="weaponCost">100</span> ذهب</span>
+                </button>
+                <button class="upgrade-btn" onclick="buyUpgrade('weaponSpeed')">
+                    <span>سرعة الأسلحة (+50% سرعة)</span>
+                    <span class="cost"><span id="weaponSpeedCost">10</span> 💎</span>
+                </button>
+            </div>
+            
+            <div class="upgrade-section">
+                <h3>👥 ترقيات الحلفاء</h3>
+                <button class="upgrade-btn" onclick="buyUpgrade('ally')">
+                    <span>حليف مقاتل (1 ضرر/ثانية)</span>
+                    <span class="cost"><span id="allyCost">500</span> ذهب</span>
+                </button>
+                <button class="upgrade-btn" onclick="buyUpgrade('allyMultiplier')">
+                    <span>تعزيز الحلفاء (+100% فعالية)</span>
+                    <span class="cost"><span id="allyMultiplierCost">15</span> 💎</span>
+                </button>
+            </div>
+            
+            <div class="upgrade-section">
+                <h3>💎 ترقيات الجواهر</h3>
+                <button class="upgrade-btn" onclick="buyUpgrade('jewelBoost')">
+                    <span>زيادة قطر الجواهر (+1 جوهرة)</span>
+                    <span class="cost"><span id="jewelBoostCost">25</span> 💎</span>
+                </button>
+                <button class="upgrade-btn" onclick="buyUpgrade('goldFromJewels')">
+                    <span>تحويل الجواهر لذهب (10 ذهب/جوهرة)</span>
+                    <span class="cost"><span id="goldFromJewelsCost">1</span> 💎</span>
+                </button>
+            </div>
+            
+            <div class="upgrade-section">
+                <h3>🌟 ترقيات خاصة</h3>
+                <button class="upgrade-btn" onclick="buyUpgrade('critical')">
+                    <span>ضربة حرجة (10% فرصة للضعف)</span>
+                    <span class="cost"><span id="criticalCost">20</span> 💎</span>
+                </button>
+                <button class="upgrade-btn" onclick="buyUpgrade('bossHunter')">
+                    <span>صائدة الزعماء (مكافآت أفضل)</span>
+                    <span class="cost"><span id="bossHunterCost">50</span> 💎</span>
+                </button>
+            </div>
+            
+            <div class="stats-panel">
+                <h3>📊 إحصائيات اللعبة</h3>
+                <div>إجمالي الذهب المكتسب: <span id="totalGold">0</span></div>
+                <div>إجمالي الجواهر المجموعة: <span id="totalJewels">0</span></div>
+                <div>أعلى وحش هزم: المستوى <span id="highestMonster">1</span></div>
+                <div>مضاعف الضرر: <span id="damageMultiplier">1</span>x</div>
+                <div>معدل الجواهر: <span id="jewelRate">1</span> جوهرة/قتيل</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // حالة اللعبة
+        const gameState = {
+            gold: 0,
+            jewels: 0,
+            kills: 0,
+            playerLevel: 1,
+            totalGold: 0,
+            totalJewels: 0,
+            highestMonster: 1,
+            
+            // الضرر
+            clickDamage: 10,
+            weaponDamage: 0,
+            allyDamage: 0,
+            
+            // الترقيات
+            clickLevel: 1,
+            weaponLevel: 0,
+            allyLevel: 0,
+            
+            // الترقيات الخاصة
+            clickMultiplier: 1,
+            weaponSpeed: 1,
+            allyMultiplier: 1,
+            criticalChance: 0,
+            jewelBoost: 1,
+            bossHunter: false,
+            
+            // التكاليف
+            clickCost: 50,
+            weaponCost: 100,
+            allyCost: 500,
+            
+            // تكاليف الجواهر
+            clickMultiplierCost: 5,
+            weaponSpeedCost: 10,
+            allyMultiplierCost: 15,
+            criticalCost: 20,
+            bossHunterCost: 50,
+            jewelBoostCost: 25,
+            goldFromJewelsCost: 1,
+            
+            // الوحش الحالي
+            monsterHealth: 100,
+            monsterMaxHealth: 100,
+            monsterLevel: 1
+        };
+
+        // تهيئة اللعبة
+        function initGame() {
+            loadGame();
+            updateUI();
+            startGameLoop();
+            
+            // إضافة حدث النقر
+            document.getElementById('clickArea').addEventListener('click', attackMonster);
+            document.getElementById('prestigeBtn').addEventListener('click', prestige);
+            
+            // تحديث كل ثانية
+            setInterval(gameTick, 1000);
+        }
+
+        // حلقة اللعبة الرئيسية
+        function gameTick() {
+            // الهجوم التلقائي
+            const autoDamage = gameState.weaponDamage + gameState.allyDamage;
+            if (autoDamage > 0) {
+                damageMonster(autoDamage);
+            }
+            
+            // تحديث واجهة المستخدم
+            updateUI();
+            
+            // حفظ اللعبة كل 10 ثواني
+            if (Date.now() % 10000 < 1000) {
+                saveGame();
+            }
+        }
+
+        // مهاجمة الوحش
+        function attackMonster() {
+            let damage = gameState.clickDamage * gameState.clickMultiplier;
+            
+            // فرصة الضربة الحرجة
+            if (gameState.criticalChance > 0 && Math.random() < gameState.criticalChance) {
+                damage *= 2;
+                showFloatingText("ضربة حرجة! 💥", "#ff0000");
+            }
+            
+            damageMonster(damage);
+            
+            // تأثير الاهتزاز
+            document.getElementById('clickArea').style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                document.getElementById('clickArea').style.transform = 'scale(1)';
+            }, 100);
+        }
+
+        // إلحاق الضرر بالوحش
+        function damageMonster(damage) {
+            if (gameState.monsterHealth <= 0) return;
+            
+            gameState.monsterHealth -= damage;
+            
+            if (gameState.monsterHealth <= 0) {
+                defeatMonster();
+            }
+            
+            updateMonsterUI();
+        }
+
+        // هزيمة الوحش
+        function defeatMonster() {
+            // حساب المكافآت
+            let goldReward = Math.floor(10 * Math.pow(1.2, gameState.monsterLevel - 1));
+            let jewelReward = gameState.jewelBoost;
+            
+            // مكافأة إضافية لصائدة الزعماء
+            if (gameState.bossHunter && gameState.monsterLevel % 10 === 0) {
+                goldReward *= 2;
+                jewelReward *= 2;
+                showAchievement(`زعيم المستوى ${gameState.monsterLevel} هزم!`);
+            }
+            
+            // منح المكافآت
+            gameState.gold += goldReward;
+            gameState.jewels += jewelReward;
+            gameState.totalGold += goldReward;
+            gameState.totalJewels += jewelReward;
+            gameState.kills++;
+            
+            // عرض الجوائز
+            showFloatingText(`+${goldReward} ذهب`, "#FFD700");
+            if (jewelReward > 0) {
+                showJewelDrop(jewelReward);
+            }
+            
+            // تحديث أعلى وحش
+            if (gameState.monsterLevel > gameState.highestMonster) {
+                gameState.highestMonster = gameState.monsterLevel;
+            }
+            
+            // توليد وحش جديد
+            spawnNewMonster();
+            
+            // فحص إنجازات
+            checkAchievements();
+        }
+
+        // توليد وحش جديد
+        function spawnNewMonster() {
+            gameState.monsterLevel = Math.max(1, Math.floor(gameState.kills / 10) + 1);
+            gameState.monsterMaxHealth = Math.floor(100 * Math.pow(1.15, gameState.monsterLevel - 1));
+            gameState.monsterHealth = gameState.monsterMaxHealth;
+            
+            // زيادة مستوى اللاعب
+            gameState.playerLevel = Math.floor(gameState.kills / 25) + 1;
+            
+            updateMonsterUI();
+        }
+
+        // شراء ترقية
+        function buyUpgrade(type) {
+            switch(type) {
+                case 'click':
+                    if (gameState.gold >= gameState.clickCost) {
+                        gameState.gold -= gameState.clickCost;
+                        gameState.clickDamage += 5;
+                        gameState.clickLevel++;
+                        gameState.clickCost = Math.floor(50 * Math.pow(1.5, gameState.clickLevel));
+                        showFloatingText("تم تحسين الضغطة! ⚔️", "#4cc9f0");
+                    }
+                    break;
+                    
+                case 'weapon':
+                    if (gameState.gold >= gameState.weaponCost) {
+                        gameState.gold -= gameState.weaponCost;
+                        gameState.weaponDamage += 2 * gameState.weaponSpeed;
+                        gameState.weaponLevel++;
+                        gameState.weaponCost = Math.floor(100 * Math.pow(1.8, gameState.weaponLevel));
+                        showFloatingText("سلاح جديد! 🔫", "#4361ee");
+                    }
+                    break;
+                    
+                case 'ally':
+                    if (gameState.gold >= gameState.allyCost) {
+                        gameState.gold -= gameState.allyCost;
+                        gameState.allyDamage += 1 * gameState.allyMultiplier;
+                        gameState.allyLevel++;
+                        gameState.allyCost = Math.floor(500 * Math.pow(1.7, gameState.allyLevel));
+                        showFloatingText("حليف جديد! 👥", "#7209b7");
+                    }
+                    break;
+                    
+                case 'clickMultiplier':
+                    if (gameState.jewels >= gameState.clickMultiplierCost) {
+                        gameState.jewels -= gameState.clickMultiplierCost;
+                        gameState.clickMultiplier *= 2;
+                        gameState.clickMultiplierCost = Math.floor(gameState.clickMultiplierCost * 3);
+                        showFloatingText("مضاعف الضغطة! ✨", "#f72585");
+                    }
+                    break;
+                    
+                case 'weaponSpeed':
+                    if (gameState.jewels >= gameState.weaponSpeedCost) {
+                        gameState.jewels -= gameState.weaponSpeedCost;
+                        gameState.weaponSpeed *= 1.5;
+                        gameState.weaponSpeedCost = Math.floor(gameState.weaponSpeedCost * 2.5);
+                        gameState.weaponDamage = gameState.weaponLevel * 2 * gameState.weaponSpeed;
+                        showFloatingText("سرعة الأسلحة زادت! ⚡", "#4cc9f0");
+                    }
+                    break;
+                    
+                case 'allyMultiplier':
+                    if (gameState.jewels >= gameState.allyMultiplierCost) {
+                        gameState.jewels -= gameState.allyMultiplierCost;
+                        gameState.allyMultiplier *= 2;
+                        gameState.allyMultiplierCost = Math.floor(gameState.allyMultiplierCost * 2.8);
+                        gameState.allyDamage = gameState.allyLevel * 1 * gameState.allyMultiplier;
+                        showFloatingText("الحلفاء أقوى! 💪", "#7209b7");
+                    }
+                    break;
+                    
+                case 'critical':
+                    if (gameState.jewels >= gameState.criticalCost && gameState.criticalChance === 0) {
+                        gameState.jewels -= gameState.criticalCost;
+                        gameState.criticalChance = 0.1;
+                        showFloatingText("تم تعلم الضربة الحرجة! 💥", "#ff0000");
+                    }
+                    break;
+                    
+                case 'bossHunter':
+                    if (gameState.jewels >= gameState.bossHunterCost && !gameState.bossHunter) {
+                        gameState.jewels -= gameState.bossHunterCost;
+                        gameState.bossHunter = true;
+                        showAchievement("أصبحت صائدة زعماء! 👑");
+                    }
+                    break;
+                    
+                case 'jewelBoost':
+                    if (gameState.jewels >= gameState.jewelBoostCost) {
+                        gameState.jewels -= gameState.jewelBoostCost;
+                        gameState.jewelBoost++;
+                        gameState.jewelBoostCost = Math.floor(gameState.jewelBoostCost * 2.2);
+                        showFloatingText("قطر الجواهر زاد! 💎", "#FFD700");
+                    }
+                    break;
+                    
+                case 'goldFromJewels':
+                    if (gameState.jewels >= gameState.goldFromJewelsCost) {
+                        const jewelsToConvert = Math.min(10, gameState.jewels);
+                        const goldGained = jewelsToConvert * 10;
+                        gameState.jewels -= jewelsToConvert;
+                        gameState.gold += goldGained;
+                        gameState.totalGold += goldGained;
+                        showFloatingText(`حولت ${jewelsToConvert} جوهرة لـ ${goldGained} ذهب! 💰`, "#FFD700");
+                    }
+                    break;
+            }
+            
+            updateUI();
+        }
+
+        // النظام البطولي
+        function prestige() {
+            if (gameState.playerLevel >= 50) {
+                const prestigeBonus = Math.floor(gameState.playerLevel / 10);
+                
+                // حفظ المكافآت البطولية
+                const prestigeData = {
+                    prestigeLevel: (localStorage.getItem('prestigeLevel') || 0) * 1 + 1,
+                    totalPrestigeBonus: (localStorage.getItem('totalPrestigeBonus') || 0) * 1 + prestigeBonus
+                };
+                
+                localStorage.setItem('prestigeLevel', prestigeData.prestigeLevel);
+                localStorage.setItem('totalPrestigeBonus', prestigeData.totalPrestigeBonus);
+                
+                // عرض الإنجاز
+                showAchievement(`البطولة ${prestigeData.prestigeLevel}! +${prestigeBonus}% ضرر دائم`);
+                
+                // إعادة تعيين اللعبة مع المكافآت
+                resetGameWithBonus(prestigeBonus);
+            }
+        }
+
+        // إعادة تعيين اللعبة بالمكافآت
+        function resetGameWithBonus(bonus) {
+            // حفظ الإحصائيات المهمة
+            const oldTotalGold = gameState.totalGold;
+            const oldTotalJewels = gameState.totalJewels;
+            
+            // إعادة تعيين حالة اللعبة
+            Object.keys(gameState).forEach(key => {
+                if (typeof gameState[key] === 'number') {
+                    gameState[key] = 0;
+                } else if (typeof gameState[key] === 'boolean') {
+                    gameState[key] = false;
+                }
+            });
+            
+            // إعادة التعيين مع الحفاظ على بعض القيم
+            gameState.clickDamage = 10 * (1 + bonus/100);
+            gameState.clickCost = 50;
+            gameState.weaponCost = 100;
+            gameState.allyCost = 500;
+            gameState.totalGold = oldTotalGold;
+            gameState.totalJewels = oldTotalJewels;
+            
+            // توليد وحش جديد
+            spawnNewMonster();
+            
+            updateUI();
+            saveGame();
+        }
+
+        // تحديث واجهة المستخدم
+        function updateUI() {
+            // تحديث الإحصائيات
+            document.getElementById('gold').textContent = formatNumber(gameState.gold);
+            document.getElementById('jewels').textContent = gameState.jewels;
+            document.getElementById('kills').textContent = gameState.kills;
+            document.getElementById('playerLevel').textContent = gameState.playerLevel;
+            document.getElementById('totalGold').textContent = formatNumber(gameState.totalGold);
+            document.getElementById('totalJewels').textContent = gameState.totalJewels;
+            document.getElementById('highestMonster').textContent = gameState.highestMonster;
+            
+            // تحديث الضرر
+            const totalClickDamage = gameState.clickDamage * gameState.clickMultiplier;
+            const totalWeaponDamage = gameState.weaponDamage;
+            const totalAllyDamage = gameState.allyDamage;
+            const totalDPS = totalWeaponDamage + totalAllyDamage;
+            
+            document.getElementById('clickDamage').textContent = totalClickDamage;
+            document.getElementById('totalClickDamage').textContent = formatNumber(totalClickDamage);
+            document.getElementById('totalWeaponDamage').textContent = formatNumber(totalWeaponDamage);
+            document.getElementById('totalAllyDamage').textContent = formatNumber(totalAllyDamage);
+            document.getElementById('totalDPS').textContent = formatNumber(totalDPS);
+            
+            // تحديث التكاليف
+            document.getElementById('clickCost').textContent = formatNumber(gameState.clickCost);
+            document.getElementById('weaponCost').textContent = formatNumber(gameState.weaponCost);
+            document.getElementById('allyCost').textContent = formatNumber(gameState.allyCost);
+            document.getElementById('clickMultiplierCost').textContent = gameState.clickMultiplierCost;
+            document.getElementById('weaponSpeedCost').textContent = gameState.weaponSpeedCost;
+            document.getElementById('allyMultiplierCost').textContent = gameState.allyMultiplierCost;
+            document.getElementById('criticalCost').textContent = gameState.criticalCost;
+            document.getElementById('bossHunterCost').textContent = gameState.bossHunterCost;
+            document.getElementById('jewelBoostCost').textContent = gameState.jewelBoostCost;
+            document.getElementById('goldFromJewelsCost').textContent = gameState.goldFromJewelsCost;
+            
+            // تحديث الإحصائيات المتقدمة
+            document.getElementById('damageMultiplier').textContent = gameState.clickMultiplier;
+            document.getElementById('jewelRate').textContent = gameState.jewelBoost;
+            
+            // تحديث تقدم البطولة
+            const prestigeProgress = Math.min(100, (gameState.playerLevel / 50) * 100);
+            document.getElementById('prestigeProgress').style.width = `${prestigeProgress}%`;
+            document.getElementById('currentLevel').textContent = gameState.playerLevel;
+            
+            const prestigeBtn = document.getElementById('prestigeBtn');
+            if (gameState.playerLevel >= 50) {
+                prestigeBtn.disabled = false;
+                prestigeBtn.textContent = `البطولة (+${Math.floor(gameState.playerLevel/10)}% ضرر دائم)`;
+            } else {
+                prestigeBtn.disabled = true;
+                prestigeBtn.textContent = `البطولة غير متاحة بعد (${gameState.playerLevel}/50)`;
+            }
+            
+            // تحديث أزرار المتجر
+            updateShopButtons();
+        }
+
+        // تحديث حالة الوحش
+        function updateMonsterUI() {
+            const healthPercent = (gameState.monsterHealth / gameState.monsterMaxHealth) * 100;
+            
+            document.getElementById('healthFill').style.width = `${healthPercent}%`;
+            document.getElementById('monsterHealth').textContent = 
+                `${formatNumber(gameState.monsterHealth)} / ${formatNumber(gameState.monsterMaxHealth)}`;
+            document.getElementById('monsterName').textContent = 
+                `وحش المستوى ${gameState.monsterLevel}`;
+            
+            const goldReward = Math.floor(10 * Math.pow(1.2, gameState.monsterLevel - 1));
+            document.getElementById('monsterReward').textContent = 
+                `${formatNumber(goldReward)} ذهب + ${gameState.jewelBoost} جوهرة`;
+        }
+
+        // تحديث أزرار المتجر
+        function updateShopButtons() {
+            const buttons = document.querySelectorAll('.upgrade-btn');
+            buttons.forEach(btn => {
+                const costElement = btn.querySelector('.cost');
+                if (costElement) {
+                    const costText = costElement.textContent;
+                    if (costText.includes('💎')) {
+                        const cost = parseInt(costText.match(/\d+/)[0]);
+                        btn.disabled = gameState.jewels < cost;
+                    } else if (costText.includes('ذهب')) {
+                        const cost = parseInt(costText.match(/\d+/)[0]);
+                        btn.disabled = gameState.gold < cost;
+                    }
+                }
+            });
+        }
+
+        // عرض النصوص الطافية
+        function showFloatingText(text, color) {
+            const floatingText = document.createElement('div');
+            floatingText.textContent = text;
+            floatingText.style.position = 'absolute';
+            floatingText.style.color = color;
+            floatingText.style.fontSize = '24px';
+            floatingText.style.fontWeight = 'bold';
+            floatingText.style.textShadow = '0 0 5px rgba(255,255,255,0.5)';
+            floatingText.style.pointerEvents = 'none';
+            floatingText.style.zIndex = '100';
+            floatingText.style.left = '50%';
+            floatingText.style.top = '50%';
+            floatingText.style.transform = 'translate(-50%, -50%)';
+            
+            document.getElementById('monsterContainer').appendChild(floatingText);
+            
+            let opacity = 1;
+            let y = 0;
+            const animation = setInterval(() => {
+                y -= 2;
+                opacity -= 0.05;
+                floatingText.style.transform = `translate(-50%, ${y}px)`;
+                floatingText.style.opacity = opacity;
+                
+                if (opacity <= 0) {
+                    clearInterval(animation);
+                    floatingText.remove();
+                }
+            }, 50);
+        }
+
+        // عرض الجواهر الساقطة
+        function showJewelDrop(count) {
+            const jewel = document.createElement('div');
+            jewel.className = 'monster-jewel-drop';
+            jewel.textContent = `+${count} 💎`;
+            jewel.style.color = 'gold';
+            jewel.style.left = `${Math.random() * 70 + 15}%`;
+            jewel.style.top = `${Math.random() * 50 + 25}%`;
+            
+            document.getElementById('monsterContainer').appendChild(jewel);
+            
+            setTimeout(() => {
+                jewel.remove();
+            }, 1500);
+        }
+
+        // عرض الإنجازات
+        function showAchievement(text) {
+            const achievement = document.createElement('div');
+            achievement.className = 'achievement-popup';
+            achievement.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 5px;">🎉 إنجاز جديد!</div>
+                <div>${text}</div>
+            `;
+            
+            document.body.appendChild(achievement);
+            
+            setTimeout(() => {
+                achievement.style.transition = 'transform 0.5s ease-out, opacity 0.5s';
+                achievement.style.transform = 'translateX(100%)';
+                achievement.style.opacity = '0';
+                
+                setTimeout(() => {
+                    achievement.remove();
+                }, 500);
+            }, 3000);
+        }
+
+        // فحص الإنجازات
+        function checkAchievements() {
+            const achievements = [
+                { condition: gameState.kills >= 10, text: "10 وحوش هزمت! 🏹" },
+                { condition: gameState.kills >= 50, text: "50 وحشاً هزمت! ⚔️" },
+                { condition: gameState.kills >= 100, text: "100 وحش هزمت! 👑" },
+                { condition: gameState.gold >= 1000, text: "ألفية الذهب! 💰" },
+                { condition: gameState.jewels >= 50, text: "جامع الجواهر! 💎" },
+                { condition: gameState.playerLevel >= 10, text: "المستوى 10! 🌟" },
+                { condition: gameState.playerLevel >= 25, text: "المستوى 25! 🏆" }
+            ];
+            
+            achievements.forEach(achievement => {
+                if (achievement.condition) {
+                    const key = `achievement_${achievement.text}`;
+                    if (!localStorage.getItem(key)) {
+                        localStorage.setItem(key, 'true');
+                        showAchievement(achievement.text);
+                    }
+                }
+            });
+        }
+
+        // تنسيق الأرقام
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return Math.floor(num).toString();
+        }
+
+        // حفظ اللعبة
+        function saveGame() {
+            localStorage.setItem('monsterSlayerGame', JSON.stringify(gameState));
+        }
+
+        // تحميل اللعبة
+        function loadGame() {
+            const saved = localStorage.getItem('monsterSlayerGame');
+            if (saved) {
+                const savedState = JSON.parse(saved);
+                Object.assign(gameState, savedState);
+            }
+        }
+
+        // بدء اللعبة
+        function startGameLoop() {
+            updateMonsterUI();
+            
+            // بدء الموسيقى/التأثيرات
+            const clickSound = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==");
+            
+            document.getElementById('clickArea').addEventListener('click', () => {
+                clickSound.currentTime = 0;
+                // clickSound.play(); // تفعيل الصوت إذا أردت
+            });
+        }
+
+        // بدء اللعبة عند تحميل الصفحة
+        window.addEventListener('load', initGame);
+    </script>
+</body>
+</html>
